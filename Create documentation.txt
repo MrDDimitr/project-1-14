@@ -1,0 +1,288 @@
+We have to write documentation for React SPA application created with CRA.
+Here are the tasks for the documentation:
+	Application description: 2 paragraphs, 4-10 Sentences.
+	Information on how to run developed application locally.
+	At least 2 example urls how to change locale.
+
+Here is the code:
+
+-- App.js
+
+
+import './App.css';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from './locales/LanguageSelector';
+import DateFormatter from './locales/DateFormatter';
+import NumberFormatter from './locales/NumberFormatter';
+import UnitConverter from './locales/UnitConverter';
+
+function App() {
+  const { t } = useTranslation();
+
+  return (
+    <div className="App">
+      <LanguageSelector />
+      <h1>{t('welcme', 'Missing key')}</h1>
+      <h1>Date Formatter</h1>
+      <DateFormatter />
+      <h1>Number Formatter</h1>
+      <NumberFormatter />
+      <h1>Unit Converter</h1>
+      <UnitConverter />
+    </div>
+  );
+}
+
+export default App;
+
+
+// LanguageSelector.js
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+
+function LanguageSelector() {
+  const { i18n } = useTranslation();
+
+  const changeLanguage = (event) => {
+    i18n.changeLanguage(event.target.value);
+  };
+
+  return (
+    <select onChange={changeLanguage} defaultValue={i18n.language}>
+      <option value="en">English</option>
+      <option value="fr">French</option>
+      <option value="ua">Ukrainian</option>
+    </select>
+  );
+}
+
+export default LanguageSelector;
+
+--Number formatter
+
+import React, { useState } from 'react';
+import { formatNumber } from './format'; 
+
+const NumberFormatter = () => {
+    const [num, setNum] = useState(0); 
+    const [locale, setLocale] = useState('en-US'); 
+
+    const formattedNumbers = formatNumber(num, locale);
+
+    return (
+        <div className="number-formatter">
+            <label>
+                Enter Number: 
+                <input type="number" value={num} onChange={e => setNum(parseFloat(e.target.value))} />
+            </label>
+
+            <label>
+                Select Locale: 
+                <select value={locale} onChange={e => setLocale(e.target.value)}>
+                    <option value="en-US">English (US)</option>
+                    <option value="fr-FR">French (France)</option>
+                    <option value="ua-UA">Ukrainian (Ukraine)</option>
+                    <option value="xx-XX">Missing (Missing)</option>
+                </select>
+            </label>
+
+            <div className="formatted-numbers">
+                <p>Default: {formattedNumbers[0]}</p>
+                <p>Currency: {formattedNumbers[1]}</p>
+                <p>With Decimals: {formattedNumbers[2]}</p>
+                <p>Scientific Notation: {formattedNumbers[3]}</p>
+            </div>
+        </div>
+    );
+};
+
+export default NumberFormatter;
+
+-- DateFormatter.js
+
+import React, { useState } from 'react';
+import { formatDate } from './format'; 
+
+const DateFormatter = () => {
+    const [date, setDate] = useState(new Date()); 
+    const [locale, setLocale] = useState('en-US'); 
+
+    const formattedDates = formatDate(date, locale);
+
+    return (
+        <div className="date-formatter">
+            <label>
+                Select Date: 
+                <input type="datetime-local" onChange={e => setDate(new Date(e.target.value))} />
+            </label>
+
+            <label>
+                Select Locale: 
+                <select value={locale} onChange={e => setLocale(e.target.value)}>
+                    <option value="en-US">English (US)</option>
+                    <option value="fr-FR">French (France)</option>
+                    <option value="ua-UA">Ukrainian (Ukraine)</option>
+                    <option value="xx-XX">Missing (Missing)</option>
+                </select>
+            </label>
+
+            <div className="formatted-dates">
+                <p>{formattedDates[0]}</p>
+                <p>{formattedDates[1]}</p>
+                <p>{formattedDates[2]}</p>
+                <p>{formattedDates[3]}</p>
+            </div>
+        </div>
+    );
+};
+
+export default DateFormatter;
+
+-- UnitConverter.js
+
+import React, { useState } from 'react';
+import { convertUnits } from './format'; 
+
+const UnitConverter = () => {
+    const [value, setValue] = useState(0); 
+    const [type, setType] = useState('inches'); 
+
+    const conversionResult = convertUnits(value, type);
+    const error = conversionResult.error;
+
+    return (
+        <div className="unit-converter">
+            <label>
+                Enter Value: 
+                <input type="number" value={value} onChange={e => setValue(parseFloat(e.target.value))} />
+            </label>
+
+            <label>
+                Select Type of Conversion: 
+                <select value={type} onChange={e => setType(e.target.value)}>
+                    <option value="inches">Inches to Centimeters</option>
+                    <option value="pounds">Pounds to Kilograms</option>
+                    <option value="liters">Liters to Ounces</option>
+                    <option value="missing">Centimeters to Kilometers</option>
+                </select>
+            </label>
+
+            <div className="conversion-result">
+                {error ? (
+                    <p>Error: {error}</p>
+                ) : (
+                    <>
+                        <p>Converted Value: {Object.values(conversionResult)[0]}</p>
+                        <p>Converted Unit: {Object.keys(conversionResult)[0]}</p>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default UnitConverter;
+
+--format.js
+
+export const formatDate = (date, locale) => {
+    const options1 = { year: 'numeric', month: 'long', day: 'numeric' };
+    const options2 = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const options3 = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    const options4 = { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' };
+
+    const safelyFormatDate = (options) => {
+        try {
+            return new Intl.DateTimeFormat(locale, options).format(date);
+        } catch (error) {
+            console.error('Error formatting date:', error);
+            return date.toString();  // Return the date in its default string representation as a fallback
+        }
+    };
+
+    return [
+        safelyFormatDate(options1),
+        safelyFormatDate(options2),
+        safelyFormatDate(options3),
+        safelyFormatDate(options4)
+    ];
+};
+
+export const formatNumber = (num, locale) => {
+    const defaultFormat = num.toString();
+
+    const currencyMap = {
+        'en-US': 'USD',
+        'ua-UA': 'UAH',
+        'fr-FR': 'EUR',
+    };
+
+    const safelyFormat = (options) => {
+        try {
+            return new Intl.NumberFormat(locale, options).format(num);
+        } catch (error) {
+            console.error('Error formatting number:', error);
+            return defaultFormat; // Use default format in case of error
+        }
+    };
+
+    return [
+        safelyFormat(),
+        safelyFormat({ style: 'currency', currency: currencyMap[locale] || 'USD' }),
+        safelyFormat({ minimumFractionDigits: 2 }),
+        safelyFormat({ notation: 'scientific' })
+    ];
+};
+
+export const convertUnits = (value, type) => {
+    const conversions = {
+        'inches': {
+            'cm': value * 2.54
+        },
+        'pounds': {
+            'kg': value * 0.453592
+        },
+        'liters': {
+            'oz': value * 33.814
+        }
+    };
+
+    if (!conversions[type]) {
+        console.error(`Error: Invalid type "${type}" provided.`);
+        return { error: `Invalid type "${type}". Available types are: ${Object.keys(conversions).join(', ')}.` };
+    }
+
+    return conversions[type];
+};
+
+ChatGPT
+Based on the provided code, here is the documentation:
+
+Documentation for React SPA Application with Internationalization
+Application Description
+The React Single Page Application (SPA) focuses on the display and interaction with locale-sensitive formats. It provides a primary interface for language selection and integrates three main tools: date formatting, number formatting, and unit conversion. All tools offer users an option to select different locales (e.g., English, French, Ukrainian) to visualize the changes immediately. The application was developed using Create React App (CRA) and leverages the 'react-i18next' library to implement internationalization.
+
+How to Run the Application Locally
+Prerequisites: Ensure you have Node.js and npm installed on your computer.
+
+Install dependencies: Navigate to the project root directory using your terminal or command prompt and run:
+
+Copy code
+npm install
+Run the application: In the project root directory, execute the following command:
+
+sql
+Copy code
+npm start
+The application will be hosted on http://localhost:3000/. Open this URL in your preferred web browser.
+
+Changing Locale via URL
+While the application provides a direct UI to change the locale, users can also change the locale via URL parameters. Here are two example URLs:
+
+English: http://localhost:3000/?lng=en
+French: http://localhost:3000/?lng=fr
+Replace the lng parameter's value (en or fr) with your desired locale code to change the application language accordingly.
+
+(Note: Implementing URL-based locale switching requires additional code not shown in the provided snippet. The above URLs are examples and would require further integration to function properly.)
+
+The documentation encapsulates the description, local setup, and example URLs for changing locale. Make sure that the codebase supports the mentioned URL-based locale switching before documenting it, or you can remove that part if it's not supported.

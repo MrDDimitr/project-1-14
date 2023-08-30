@@ -12,7 +12,7 @@ function App() {
   return (
     <div className="App">
       <LanguageSelector />
-      <h1>{t('welcme', 'Missing key')}</h1>
+      <h1>{t('welcome', 'Missing key')}</h1>
       <h1>Date Formatter</h1>
       <DateFormatter />
       <h1>Number Formatter</h1>
